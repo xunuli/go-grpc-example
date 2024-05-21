@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "tlsca_server/proto;proto";
+option java_multiple_files = true;
+option java_package = "proto";
+
+service Hello {
+	rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+	string requestName = 1;
+	int64 age = 2;
+	repeated string name = 3;
+}
+message HelloReply {
+	string responseMsg = 1;
+}
