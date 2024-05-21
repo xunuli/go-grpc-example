@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "/proto;proto";
+option java_multiple_files = true;
+option java_package = "proto";
+
+service Echo {
+	// UnaryAPI，一元RPC调用
+	rpc UnaryEcho(EchoRequest) returns (EchoResponse) {}
+	// SServerStreaming，服务端流式调用
+	rpc ServerStreamingEcho(EchoRequest) returns (stream EchoResponse) {}
+	// ClientStreamingE，客户端流式调用
+	rpc ClientStreamingEcho(stream EchoRequest) returns (EchoResponse) {}
+	// BidirectionalStreaming，双向流式diaoyong
+	rpc BidirectionalStreamingEcho(stream EchoRequest) returns (stream EchoResponse) {}
+}
+
+message EchoRequest {
+	string message = 1;
+}
+
+message EchoResponse {
+	string message = 1;
+}
