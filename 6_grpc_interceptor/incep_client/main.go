@@ -20,12 +20,13 @@ func logger(format string, a ...interface{}) {
 	fmt.Printf("LOG:\t"+format+"\n", a...)
 }
 
-// unaryInterceptor 一个简单的 unary interceptor 示例。
+// unaryInterceptor（客户端一元拦截器） 一个简单的 unary interceptor 示例。
 func unaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-	// pre-processing
+	// pre-processing（预处理）
 	start := time.Now()
+	//调用RPC方法，一般在拦截器中调用 invoker 能达到调用 RPC 方法的效果，当然底层也是 gRPC 在处理。
 	err := invoker(ctx, method, req, reply, cc, opts...) // invoking RPC method
-	// post-processing
+	// post-processing（后处理）
 	end := time.Now()
 	logger("RPC: %s, req:%v start time: %s, end time: %s, err: %v", method, req, start.Format(time.RFC3339), end.Format(time.RFC3339), err)
 	return err
@@ -36,21 +37,24 @@ type wrappedStream struct {
 	grpc.ClientStream
 }
 
+// 初始化一个wrappedStream
 func newWrappedStream(s grpc.ClientStream) grpc.ClientStream {
 	return &wrappedStream{s}
 }
 
+// 重写接受方法
 func (w *wrappedStream) RecvMsg(m interface{}) error {
 	logger("Receive a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
 	return w.ClientStream.RecvMsg(m)
 }
 
+// 重写发送方法
 func (w *wrappedStream) SendMsg(m interface{}) error {
 	logger("Send a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
 	return w.ClientStream.SendMsg(m)
 }
 
-// streamInterceptor 一个简单的 stream interceptor 示例。
+// streamInterceptor（流拦截器） 一个简单的 stream interceptor 示例。
 func streamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 	s, err := streamer(ctx, desc, cc, method, opts...)
 	if err != nil {
@@ -59,6 +63,7 @@ func streamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.Clie
 	return newWrappedStream(s), nil
 }
 
+// 调用一元方法
 func callUnaryEcho(client ecpb.EchoClient, message string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -69,6 +74,7 @@ func callUnaryEcho(client ecpb.EchoClient, message string) {
 	fmt.Println("UnaryEcho: ", resp.Message)
 }
 
+// 调用双向流方法
 func callBidiStreamingEcho(client ecpb.EchoClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
