@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto.helloworld;
+
+option go_package = "grpc_gateway/proto/helloworld;helloworld";
+option java_multiple_files = true;
+option java_package = "proto.helloworld";
+
+// 导入google/api/annotations.proto
+import "google/api/annotations.proto";
+
+service Hello {
+	rpc SayHello (HelloRequest) returns (HelloReply){
+		option (google.api.http) = {
+			post: "/v1/example/echo"
+			body: "*"
+		};
+	}
+}
+
+message HelloRequest {
+	string name = 1;
+}
+message HelloReply {
+	string reply = 1;
+}
