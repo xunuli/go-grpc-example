@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package name_server.proto;
+
+option go_package = "/name_server/proto;proto";
+option java_multiple_files = true;
+option java_package = "name_server.proto";
+
+service Hello {
+	rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+	string name = 1;
+}
+message HelloReply {
+	string reply = 1;
+}
