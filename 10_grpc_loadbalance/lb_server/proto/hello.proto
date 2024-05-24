@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package lb_client.proto;
+
+option go_package = "grpc_loadbalance/lb_client/proto;proto";
+option java_multiple_files = true;
+option java_package = "lb_client.proto";
+
+service Hello {
+	rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+	string name = 1;
+}
+message HelloReply {
+	string reply = 1;
+}
