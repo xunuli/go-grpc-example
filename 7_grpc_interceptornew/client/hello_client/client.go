@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -15,6 +16,7 @@ import (
 // unaryInterceptor（客户端一元拦截器） 一个简单的 unary interceptor 示例。
 func unaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 	// pre-processing（预处理）
+	fmt.Println("我是第一个拦截器")
 	start := time.Now()
 	cos := runtime.GOOS
 	ctx = metadata.AppendToOutgoingContext(ctx, "client-os", cos)
@@ -26,11 +28,27 @@ func unaryInterceptor(ctx context.Context, method string, req, reply interface{}
 	return err
 }
 
+// unaryInterceptorTwo（客户端一元拦截器） 第二个
+func unaryInterceptorTow() grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		//预处理
+		fmt.Println("我是第二个拦截器")
+		//调用当前方法
+		err := invoker(ctx, method, req, reply, cc, opts...)
+
+		//后处理
+		fmt.Println("哈哈哈啊哈哈")
+		return err
+	}
+}
+
 func main() {
-	//建立连接
+	//建立连接  链式拦截器
+
 	conn, err := grpc.NewClient("localhost:9092",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(unaryInterceptor), //拦截器
+		//grpc.WithUnaryInterceptor(unaryInterceptor), //一元拦截器
+		grpc.WithUnaryInterceptor(middleware.ChainUnaryClient(unaryInterceptor, unaryInterceptorTow())),
 	)
 	if err != nil {
 		log.Fatalf("conn failed: %v", err)
@@ -56,7 +74,7 @@ func runSayHello(client hpb.HelloClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 1; i++ {
 		resp, err := client.SayHello(ctx, &hpb.HelloRequest{Name: "xuji"})
 		if err != nil {
 			log.Fatalf("call server failed: %v", err)

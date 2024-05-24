@@ -3,6 +3,7 @@ module grpc_interceptor
 go 1.21.5
 
 require (
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1
 )
